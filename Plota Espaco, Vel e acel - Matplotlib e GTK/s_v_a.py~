@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # matplotlib Figure object
 from matplotlib.figure import Figure
 
@@ -21,9 +19,11 @@ ser = ""
 
 tamanho = 100
 i = 0
-x = np.arange(tamanho)
-y = np.arange(tamanho)
 
+x = np.arange(tamanho)
+s = np.arange(tamanho)
+v = np.arange(tamanho)
+a = np.arange(tamanho)
 	
 
 def conecta():
@@ -39,15 +39,23 @@ def fecha():
 	
 	
 def le_dados():
-	global x, y, ser	
-	y = np.delete(y, 0)
-	y = np.append(y, int(ser.readline()))
-
+	global x, s, v, a, ser	
+	s = np.delete(s, 0)
+	s = np.append(s, int(ser.readline()))
+	v = np.delete(v, 0)
+	v = np.append(v, (s[tamanho-1]-s[tamanho-5])/.5)
+	a = np.delete(a, 0)
+	a = np.append(a, (v[tamanho-1]-v[tamanho-5])/.5)
+	
 def update_draw(*args):
-	global x, y, i
+	global x, s, v, a, i
 	i = i + 1
 	le_dados()
-	l.set_data(x, y)
+	
+	ls.set_data(x, s)
+	lv.set_data(x, v)
+	la.set_data(x, a)
+	
 	fig.canvas.draw()
 	#if i > 30:
 	#	return False
@@ -62,20 +70,39 @@ win = gtk.Window()
 # connect the 'destroy' signal to gtk.main_quit function
 win.connect("destroy",gtk.main_quit)
 # define the size of the GTK+ window
-win.set_default_size(600, 400)
+win.set_default_size(600, 8750)
 # set the window title
 win.set_title("Monitor de Luminosidade - Usando MatPlotLib e Gtk")
 
 # matplotlib code to generate the plot
-fig = Figure(figsize=(6, 4), dpi=70)
-ax = fig.add_subplot(111)
-ax.set_ylim(20, 230)
-ax.set_xlabel("Tempo de amostragem")
-ax.set_ylabel("Intensidade da Luz")
-ax.grid()
+fig = Figure(figsize=(6, 6), dpi=70)
+#grafico do espaco x tempo
+axs = fig.add_subplot(311)
+axs.set_ylim(-230, 230)
+axs.set_xlabel("Tempo")
+axs.set_ylabel("Espaco (cm)")
+axs.grid()
 
-l, = ax.plot(x, y, label='Luz')
-ax.legend()
+#grafico da velocidade x tempo
+axv = fig.add_subplot(312)
+axv.set_ylim(-230, 230)
+axv.set_xlabel("Tempo")
+axv.set_ylabel("Velocidade (cm/s)")
+axv.grid()
+
+#grafico da aceleracao x tempo
+axa = fig.add_subplot(313)
+axa.set_ylim(-230, 230)
+axa.set_xlabel("Tempo")
+axa.set_ylabel("Aceleracao ((cm/s)*(1/s))")
+axa.grid()
+
+
+ls, = axs.plot(x, s, color='blue')
+lv, = axv.plot(x, v, color='green')
+la, = axa.plot(x, a, color='red')
+
+
 # we bind the figure to the FigureCanvas, so that it will be
 # drawn using the specific backend graphic functions
 canvas = FigureCanvas(fig)
